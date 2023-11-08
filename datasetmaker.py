@@ -14,6 +14,10 @@ from PyPDF2 import PdfReader
 
 import nltk
 
+import re
+
+from nltk.tokenize import word_tokenize
+
 
 nltk.download('punkt') # Ensure the punkt tokenizer models are downloaded
 
@@ -21,6 +25,95 @@ nltk.download('punkt') # Ensure the punkt tokenizer models are downloaded
 # Define constants for the application
 
 EMBEDDING_MODEL = "text-embedding-ada-002"
+
+
+
+
+def preprocess_pdf_text(pdf_path):
+
+    """
+
+    Preprocess the text extracted from a PDF.
+
+
+    :param pdf_path: The file path to the PDF document to be processed.
+
+    :return: A list of words after removing punctuation and converting to lowercase.
+
+    
+
+    Improvement suggestions:
+
+    - Explore using other PDF extraction libraries like `pdfminer.six` for better text extraction.
+
+    - Consider additional preprocessing, such as stemming or lemmatization.
+
+    - Assess performance concerns with large PDF documents.
+
+    """
+
+    try:
+
+        # Open the PDF file in binary mode
+
+        with open(pdf_path, "rb") as file:
+
+            # Create a PDF file reader object
+
+            pdf = PyPDF2.PdfFileReader(file)
+
+
+            # Initialize an empty string to hold the extracted text
+
+            text = ""
+
+
+            # Loop over each page in the PDF and extract the text
+
+            for page_num in range(pdf.getNumPages()):
+
+                # Try to extract text from a page and append to the full text
+
+                try:
+
+                    text += pdf.getPage(page_num).extractText()
+
+                except Exception as e:
+
+                    # Output the error and continue processing pages
+
+                    print(f"Error extracting text from page {page_num}: {e}")
+
+
+            # Convert the text to lowercase
+
+            text = text.lower()
+
+
+            # Punctuation is handled during tokenization by nltk's word_tokenize
+
+            # Tokenize the text and remove non-alphabetic tokens such as punctuation
+
+            words = word_tokenize(text)
+
+            words = [word for word in words if word.isalpha()]
+
+
+            # Improvement: Investigate other tokenization techniques if word_tokenize
+
+            # does not meet the specific requirements of your language processing task.
+
+
+    except IOError as e:
+
+        # Handle file I/O errors, such as the file not found or not readable
+
+        print(f"An error occurred while opening the PDF file: {e}")
+
+        words = []
+
+
+    return words
 
 
 # Function to read and extract text from a PDF file.
